@@ -1,0 +1,11 @@
+# Files
+create_structure.py
+
+# Folders
+venv/
+*.pyc
+__pycache__/
+*.pkl
+dist/
+build/
+todojo.egg-info/
