@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
-from ..models.tasks import Todo, Status
+from ..models.todo import Todo, Status
+from rich.console import Console
+from rich.table import Table
+from rich import print
 
 
 def _load_todos(file_path: str = "todos.json") -> list:
@@ -14,7 +17,7 @@ def _load_todos(file_path: str = "todos.json") -> list:
     except FileNotFoundError:
         return []
     except json.JSONDecodeError:
-        print(f"Error: {file_path} is corrupted or contains invalid JSON.")
+        print(f"[red]Error: {file_path} is corrupted or contains invalid JSON.[/red]")
         return []
 
 
@@ -39,7 +42,7 @@ def add_todo(description: str, file_path: str = "todos.json") -> None:
 
     todos.append(new_todo.__dict__)
     _save_todos(todos, file_path)
-    print(f"Added {description}")
+    print(f"[green]Added {description}[/green]")
 
 
 def update_todo(todo_id: int, new_status: str, file_path: str = "todos.json") -> None:
@@ -50,10 +53,10 @@ def update_todo(todo_id: int, new_status: str, file_path: str = "todos.json") ->
             todo["status"] = Status[new_status.upper()].value
             todo["updatedAt"] = datetime.now()
             _save_todos(todos, file_path)
-            print(f"Updated todo {todo_id} to status {new_status}.")
+            print(f"[green]Updated todo {todo_id} to status {new_status}.[/green]")
             return
 
-    print(f"Todo with id {todo_id} not found.")
+    print(f"[red]Todo with id {todo_id} not found.[/red]")
 
 
 def delete_todo(todo_id: int, file_path: str = "todos.json") -> None:
@@ -63,6 +66,37 @@ def delete_todo(todo_id: int, file_path: str = "todos.json") -> None:
 
     _save_todos(new_todos, file_path)
     if len(new_todos) < len(todos):  # Check if a todo was deleted
-        print(f"Deleted todo with id {todo_id}.")
+        print(f"[green]Deleted todo with id {todo_id}.[/green]")
     else:
-        print(f"Todo with id {todo_id} not found.")
+        print(f"[red]Todo with id {todo_id} not found.[/red]")
+
+
+def list_todos(status: str, file_path: str = "todos.json") -> None:
+    """List all todos with the given status."""
+    todos = _load_todos(file_path)
+    if status:
+        todos = [
+            todo for todo in todos if todo["status"] == Status[status.upper()].value
+        ]
+
+    if not todos or len(todos) == 0:
+        print(f"No todos with status [red]{status}[/red] found.")
+        return
+
+    table_title = f"Todos with status {status}" if status else "All Todos"
+
+    table = Table(title=table_title, header_style="bold bright_green")
+    columns = ["ID", "Description", "Status", "Created At", "Updated At"]
+    for column in columns:
+        table.add_column(column, style="white")
+
+    for todo in todos:
+        table.add_row(
+            str(todo["id"]),
+            todo["description"],
+            Status(todo["status"]).name,
+            todo["createdAt"],
+            todo["updatedAt"],
+        )
+    console = Console()
+    console.print(table)

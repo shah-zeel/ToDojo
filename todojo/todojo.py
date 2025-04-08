@@ -1,6 +1,6 @@
 import argparse
 import todojo.cmd.todo_manager as tm
-from todojo.models.tasks import Status
+from todojo.models.todo import Status
 
 
 def main():
@@ -40,6 +40,16 @@ def main():
         help="Enter id of the todo you want to delete.",
     )
 
+    list_parser = sub_parser.add_parser("list", help="List all todos.")
+    list_parser.add_argument(
+        "-s",
+        "--status",
+        type=str,
+        required=False,
+        choices=[status.name.lower() for status in Status],  # Enum values as choices
+        help="Status of the todos to list.",
+    )
+
     args = parser.parse_args()
 
     if args.command == "add":
@@ -48,6 +58,8 @@ def main():
         tm.update_todo(args.id, args.mark_as)
     elif args.command == "delete":
         tm.delete_todo(args.id)
+    elif args.command == "list":
+        tm.list_todos(args.status)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from todojo.cmd.todo_manager import (
     _load_todos,
     _save_todos,
 )
-from todojo.models.tasks import Todo, Status
+from todojo.models.todo import Todo, Status
 import contextlib
 
 
